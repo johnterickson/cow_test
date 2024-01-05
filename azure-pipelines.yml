@@ -10,10 +10,74 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- powershell: |
+    Get-Volume
+    Get-PhysicalDisk
+  displayName: 'Disk Info'
+
+  - script: |
+    @echo on
+
+    cd \
+
+    echo SELECT VDISK FILE=%CD%ReFS.vhdx > diskpart.script.txt
+    echo DETACH VDISK >> diskpart.script.txt
+    diskpart /s diskpart.script.txt
+    del %CD%ReFS.vhdx
+    del diskpart.script.txt
+
+    echo CREATE VDISK FILE=%CD%ReFS.vhdx MAXIMUM=250000 TYPE=EXPANDABLE > diskpart.script.txt
+    echo SELECT VDISK FILE=%CD%ReFS.vhdx >> diskpart.script.txt
+    echo ATTACH VDISK >> diskpart.script.txt
+    echo CREATE PARTITION PRIMARY >> diskpart.script.txt
+    echo FORMAT FS=REFS QUICK >> diskpart.script.txt
+    echo ASSIGN LETTER=R >> diskpart.script.txt
+    type diskpart.script.txt
+    diskpart /s diskpart.script.txt
+    del diskpart.script.txt
+
+    format R: /fs:ReFS /Q /X /Y /DevDrv || format R: /fs:ReFS /Q /X /Y
+
+    # dir /s /b "%AGENT_BUILDDIRECTORY%\*"
+    mkdir "R:\%AGENT_BUILDDIRECTORY:~3%"
+    # robocopy /MOVE /E /R:0 /COPYALL "%AGENT_BUILDDIRECTORY%" "R:\%AGENT_BUILDDIRECTORY:~3%" *
+    # dir /s /b "%AGENT_BUILDDIRECTORY%\*"
+
+    IF EXIST "%AGENT_BUILDDIRECTORY%.old" ( rmdir /s /q "%AGENT_BUILDDIRECTORY%.old" )
+    IF EXIST "%AGENT_BUILDDIRECTORY%" (
+      rmdir /s /q "%AGENT_BUILDDIRECTORY%" || move "%AGENT_BUILDDIRECTORY%" "%AGENT_BUILDDIRECTORY%.old"
+    )
+
+    mklink /J "%AGENT_BUILDDIRECTORY%" "R:\%AGENT_BUILDDIRECTORY:~3%"
+
+    mkdir "$(Build.ArtifactStagingDirectory)"
+    mkdir "$(Build.BinariesDirectory)"
+    mkdir "$(Build.SourcesDirectory)"
+    mkdir "$(Common.TestResultsDirectory)"
+    
+    IF EXIST "\MSBuildCache.old" ( rmdir /s /q "\MSBuildCache.old" )
+    IF EXIST "\MSBuildCache" (
+      rmdir /s /q "\MSBuildCache" || move "\MSBuildCache" "\MSBuildCache.old"
+    )
+
+    mkdir "R:\MSBuildCache"
+    mklink /J "\MSBuildCache" "R:\MSBuildCache"
+
+    mkdir R:\TEMP
+    setx TEMP R:\TEMP
+    echo ##vso[task.setvariable variable=TEMP;]R:\TEMP
+  displayName: 'Remap AGENT_BUILDDIRECTORY to a ReFS (DevDrv if available) volume'
+
+- powershell: |
+    Get-Volume
+    Get-PhysicalDisk
+  displayName: 'Disk Info'
 
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    @echo on
+    echo hello > hello.txt
+    dotnet run -- %CD%\hello.txt %CD%\hello.txt.2
+    echo hello > R:\hello.txt
+    dotnet run -- R:\hello.txt R:\hello.txt.2
+    echo hello > C:\hello.txt
+    dotnet run -- C:\hello.txt C:\hello.txt.2
