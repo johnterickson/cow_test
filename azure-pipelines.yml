@@ -15,9 +15,8 @@ steps:
     Get-PhysicalDisk
   displayName: 'Disk Info'
 
-  - script: |
+- script: |
     @echo on
-
     cd \
 
     echo SELECT VDISK FILE=%CD%ReFS.vhdx > diskpart.script.txt
