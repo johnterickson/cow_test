@@ -55,6 +55,9 @@ steps:
     diskpart /s diskpart.script.txt
     del diskpart.script.txt
 
+    dir "R:\%AGENT_BUILDDIRECTORY:~3%"
+    dir "%AGENT_BUILDDIRECTORY%"
+
     # mkdir "$(Build.ArtifactStagingDirectory)"
     # mkdir "$(Build.BinariesDirectory)"
     # mkdir "$(Build.SourcesDirectory)"
@@ -71,6 +74,8 @@ steps:
     mkdir R:\TEMP
     setx TEMP R:\TEMP
     echo ##vso[task.setvariable variable=TEMP;]R:\TEMP
+
+    cd "%AGENT_BUILDDIRECTORY%"
   displayName: 'Remap AGENT_BUILDDIRECTORY to a ReFS (DevDrv if available) volume'
 
 - powershell: |
