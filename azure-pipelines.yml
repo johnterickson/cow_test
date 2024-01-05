@@ -47,7 +47,13 @@ steps:
       rmdir /s /q "%AGENT_BUILDDIRECTORY%" || move "%AGENT_BUILDDIRECTORY%" "%AGENT_BUILDDIRECTORY%.old"
     )
 
-    mklink /J "%AGENT_BUILDDIRECTORY%" "R:\%AGENT_BUILDDIRECTORY:~3%"
+    mkdir "%AGENT_BUILDDIRECTORY%"
+    echo SELECT VDISK FILE=%CD%ReFS.vhdx >> diskpart.script.txt
+    echo SELECT VOLUME=R >> diskpart.script.txt
+    echo ASSIGN MOUNT=%AGENT_BUILDDIRECTORY% >> diskpart.script.txt
+    type diskpart.script.txt
+    diskpart /s diskpart.script.txt
+    del diskpart.script.txt
 
     # mkdir "$(Build.ArtifactStagingDirectory)"
     # mkdir "$(Build.BinariesDirectory)"
