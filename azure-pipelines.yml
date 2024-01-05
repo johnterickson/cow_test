@@ -39,7 +39,7 @@ steps:
 
     # dir /s /b "%AGENT_BUILDDIRECTORY%\*"
     mkdir "R:\%AGENT_BUILDDIRECTORY:~3%"
-    # robocopy /MOVE /E /R:0 /COPYALL "%AGENT_BUILDDIRECTORY%" "R:\%AGENT_BUILDDIRECTORY:~3%" *
+    robocopy /MOVE /E /R:0 /COPYALL "%AGENT_BUILDDIRECTORY%" "R:\%AGENT_BUILDDIRECTORY:~3%" *
     # dir /s /b "%AGENT_BUILDDIRECTORY%\*"
 
     IF EXIST "%AGENT_BUILDDIRECTORY%.old" ( rmdir /s /q "%AGENT_BUILDDIRECTORY%.old" )
@@ -49,10 +49,10 @@ steps:
 
     mklink /J "%AGENT_BUILDDIRECTORY%" "R:\%AGENT_BUILDDIRECTORY:~3%"
 
-    mkdir "$(Build.ArtifactStagingDirectory)"
-    mkdir "$(Build.BinariesDirectory)"
-    mkdir "$(Build.SourcesDirectory)"
-    mkdir "$(Common.TestResultsDirectory)"
+    # mkdir "$(Build.ArtifactStagingDirectory)"
+    # mkdir "$(Build.BinariesDirectory)"
+    # mkdir "$(Build.SourcesDirectory)"
+    # mkdir "$(Common.TestResultsDirectory)"
     
     IF EXIST "\MSBuildCache.old" ( rmdir /s /q "\MSBuildCache.old" )
     IF EXIST "\MSBuildCache" (
